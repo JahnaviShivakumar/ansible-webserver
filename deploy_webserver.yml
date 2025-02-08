@@ -1,0 +1,91 @@
+
+- name: Deploy Web Server
+  hosts: webservers
+  become: yes
+  tasks:
+
+    - name: Install Apache
+      apt:
+        name: apache2
+        state: present
+      when: ansible_os_family == "Debian"
+
+    - name: Start Apache Service
+      service:
+        name: apache2
+        state: started
+        enabled: yes
+
+    - name: Create index.html for VM1
+      copy:
+        dest: /var/www/html/index.html
+        content: "Hello World from SJSU-1"
+      when: inventory_hostname == "vm1"
+
+    - name: Allow traffic on port 8080
+      lineinfile:
+        path: /etc/apache2/ports.conf
+        line: "Listen 8080"
+        create: yes
+
+    - name: Update VirtualHost Configuration
+      copy:
+        dest: /etc/apache2/sites-available/000-default.conf
+        content: |
+          <VirtualHost *:8080>
+              DocumentRoot /var/www/html
+          </VirtualHost>
+
+    - name: Restart Apache
+      service:
+        name: apache2
+        state: restarted
+
+
+- name: Deploy Web Server
+  hosts: webservers
+  become: yes
+  tasks:
+
+    - name: Install Apache
+      apt:
+        name: apache2
+        state: present
+      when: ansible_os_family == "Debian"
+
+    - name: Start Apache Service
+      service:
+        name: apache2
+        state: started
+        enabled: yes
+
+    - name: Create index.html for VM1
+      copy:
+        dest: /var/www/html/index.html
+        content: "Hello World from SJSU-1"
+      when: inventory_hostname == "vm1"
+
+    - name: Create index.html for VM2
+      copy:
+        dest: /var/www/html/index.html
+        content: "Hello World from SJSU-2"
+      when: inventory_hostname == "vm2"
+
+    - name: Allow traffic on port 8080
+      lineinfile:
+        path: /etc/apache2/ports.conf
+        line: "Listen 8080"
+        create: yes
+
+    - name: Update VirtualHost Configuration
+      copy:
+        dest: /etc/apache2/sites-available/000-default.conf
+        content: |
+          <VirtualHost *:8080>
+              DocumentRoot /var/www/html
+          </VirtualHost>
+
+    - name: Restart Apache
+      service:
+        name: apache2
+        state: restarted
