@@ -1,0 +1,39 @@
+---
+- name: Undeploy Web Server
+  hosts: webservers
+  become: yes
+  tasks:
+
+    - name: Stop Apache Service
+      service:
+        name: apache2
+        state: stopped
+      when: ansible_os_family == "Debian"
+
+    - name: Uninstall Apache
+      apt:
+        name: apache2
+        state: absent
+      when: ansible_os_family == "Debian"
+
+    - name: Remove Web Content
+      file:
+        path: /var/www/html/index.html
+        state: absent
+
+    - name: Remove Apache Configurations
+      file:
+        path: /etc/apache2/sites-available/000-default.conf
+        state: absent
+
+    - name: Reload System Daemon
+      command: systemctl daemon-reload
+
+    - name: Verify Apache is Removed
+      command: dpkg -l | grep apache2
+      register: apache_check
+      ignore_errors: yes
+
+    - debug:
+        msg: "Apache has been removed" 
+      when: "'apache2' not in apache_check.stdout"
